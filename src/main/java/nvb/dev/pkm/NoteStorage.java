@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Optional;
 
 public class NoteStorage {
     private static final String DEFAULT_DIRECTORY_NAME = "notes";
@@ -21,5 +22,14 @@ public class NoteStorage {
                 content,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    public static Optional<Note> read(String title) throws IOException {
+        Path notePath = NOTES_PATH.resolve(title + ".md");
+        if (!Files.exists(notePath))
+            return Optional.empty();
+
+        String fileContent = Files.readString(notePath);
+        return Optional.of(new Note(title, fileContent));
     }
 }
