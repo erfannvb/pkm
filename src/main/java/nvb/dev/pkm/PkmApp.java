@@ -19,5 +19,11 @@ public class PkmApp {
         Optional<Note> test = NoteStorage.read("Test");
         if (test.isEmpty())
             System.out.println("Test does not exist!");
+
+        boolean javaOptionalIsDeleted = NoteStorage.delete("Java Optional");
+        if (javaOptionalIsDeleted)
+            System.out.println("Deleted successfully!");
+        else
+            System.out.println("File does not exist!");
     }
 }

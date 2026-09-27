@@ -32,4 +32,9 @@ public class NoteStorage {
         String fileContent = Files.readString(notePath);
         return Optional.of(new Note(title, fileContent));
     }
+
+    public static boolean delete(String title) throws IOException {
+        Path notePath = NOTES_PATH.resolve(title + ".md");
+        return Files.deleteIfExists(notePath);
+    }
 }
