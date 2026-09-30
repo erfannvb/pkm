@@ -1,6 +1,7 @@
 package nvb.dev.pkm;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 public class PkmApp {
@@ -9,6 +10,17 @@ public class PkmApp {
                 "An Optional is a container that holds either exactly one value or none.");
 
         NoteStorage.save(note);
+
+        Note springNote = new Note("Spring", "Some content for Spring");
+        NoteStorage.save(springNote);
+
+        Note mdNotesNote = new Note("my.md.notes", "Test");
+        NoteStorage.save(mdNotesNote);
+
+        List<Note> list = NoteStorage.list();
+        for (Note n : list) {
+            System.out.println(n.getTitle() + " - " + n.getContent());
+        }
 
         Optional<Note> javaOptional = NoteStorage.read("Java Optional");
         javaOptional.ifPresent(n -> {

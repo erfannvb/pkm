@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class NoteStorage {
     private static final String DEFAULT_DIRECTORY_NAME = "notes";
@@ -36,5 +39,28 @@ public class NoteStorage {
     public static boolean delete(String title) throws IOException {
         Path notePath = NOTES_PATH.resolve(title + ".md");
         return Files.deleteIfExists(notePath);
+    }
+
+    public static List<Note> list() throws IOException {
+        if (!Files.exists(NOTES_PATH))
+            return Collections.emptyList();
+
+        try (Stream<Path> notesStreamPath = Files.list(NOTES_PATH)) {
+            return notesStreamPath
+                    .filter(path -> path.toString().endsWith(".md"))
+                    .map(path -> {
+                        Path fileName = path.getFileName();
+                        int index = fileName.toString().lastIndexOf(".md");
+                        String title = fileName.toString().substring(0, index);
+                        String content;
+                        try {
+                            content = Files.readString(path);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                        return new Note(title, content);
+                    })
+                    .toList();
+        }
     }
 }
