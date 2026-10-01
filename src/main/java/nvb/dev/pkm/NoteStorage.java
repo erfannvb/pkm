@@ -1,9 +1,13 @@
 package nvb.dev.pkm;
 
+import nvb.dev.pkm.dto.ParsedNote;
+import nvb.dev.pkm.utils.MarkdownNoteParser;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +16,7 @@ import java.util.stream.Stream;
 public class NoteStorage {
     private static final String DEFAULT_DIRECTORY_NAME = "notes";
     private static final Path NOTES_PATH = Path.of(DEFAULT_DIRECTORY_NAME);
+    private static final MarkdownNoteParser NOTE_PARSER = new MarkdownNoteParser();
 
     public static void save(Note note) throws IOException {
         if (!Files.exists(NOTES_PATH))
@@ -19,10 +24,14 @@ public class NoteStorage {
 
         String title = note.getTitle();
         String content = note.getContent();
+        List<String> tags = note.getTags();
+        String commaSeparatedTags = String.join(", ", tags);
+
+        String frontMatter = "---\ntags: " + commaSeparatedTags + "\n---\n";
 
         Path createdFile = NOTES_PATH.resolve(title + ".md");
         Files.writeString(createdFile,
-                content,
+                frontMatter + "\n" + content,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING);
     }
@@ -33,7 +42,9 @@ public class NoteStorage {
             return Optional.empty();
 
         String fileContent = Files.readString(notePath);
-        return Optional.of(new Note(title, fileContent));
+        ParsedNote parsedNote = NOTE_PARSER.parse(fileContent);
+
+        return Optional.of(new Note(title, parsedNote.content(), parsedNote.tags()));
     }
 
     public static boolean delete(String title) throws IOException {
@@ -45,22 +56,31 @@ public class NoteStorage {
         if (!Files.exists(NOTES_PATH))
             return Collections.emptyList();
 
-        try (Stream<Path> notesStreamPath = Files.list(NOTES_PATH)) {
-            return notesStreamPath
-                    .filter(path -> path.toString().endsWith(".md"))
-                    .map(path -> {
-                        Path fileName = path.getFileName();
-                        int index = fileName.toString().lastIndexOf(".md");
-                        String title = fileName.toString().substring(0, index);
-                        String content;
-                        try {
-                            content = Files.readString(path);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                        return new Note(title, content);
-                    })
-                    .toList();
+        List<Note> noteList = new ArrayList<>();
+
+        try (Stream<Path> paths = Files.list(NOTES_PATH)) {
+            for (Path path : paths.toList()) {
+                if (path.toString().endsWith(".md")) {
+                    Path fileName = path.getFileName();
+                    String fileNameString = fileName.toString();
+                    int index = fileNameString.lastIndexOf(".md");
+
+                    String title = fileNameString.substring(0, index);
+                    String content = Files.readString(path);
+
+                    ParsedNote parsedNote = NOTE_PARSER.parse(content);
+
+                    Note note = new Note(
+                            title,
+                            parsedNote.content(),
+                            parsedNote.tags()
+                    );
+
+                    noteList.add(note);
+                }
+            }
         }
+
+        return noteList;
     }
 }
