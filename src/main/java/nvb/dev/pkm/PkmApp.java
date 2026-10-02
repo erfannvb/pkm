@@ -1,9 +1,7 @@
 package nvb.dev.pkm;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
 
 public class PkmApp {
 
@@ -38,8 +36,23 @@ public class PkmApp {
 
                     String title = parts[1];
 
+                    System.out.print("Content: ");
+                    String content = scanner.nextLine();
+
+                    System.out.print("Tags: ");
+                    String tags = scanner.nextLine();
+                    List<String> tagList;
+                    if (tags.isEmpty()) {
+                        tagList = Collections.emptyList();
+                    } else {
+                        tagList = Arrays.stream(tags.split(","))
+                                .map(String::strip)
+                                .filter(tag -> !tag.isBlank())
+                                .toList();
+                    }
+
                     try {
-                        Note note = new Note(title, "");
+                        Note note = new Note(title, content, tagList);
                         NoteStorage.save(note);
                         System.out.println("Note created: " + title);
                     } catch (IOException e) {
