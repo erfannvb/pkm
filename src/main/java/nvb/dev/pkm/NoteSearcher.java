@@ -11,7 +11,8 @@ public class NoteSearcher {
         return noteList
                 .stream()
                 .filter(note -> note.getTitle().toLowerCase().contains(lowerInput)
-                        || note.getContent().toLowerCase().contains(lowerInput))
+                        || note.getContent().toLowerCase().contains(lowerInput)
+                        || note.getTags().stream().anyMatch(tag -> tag.toLowerCase().equalsIgnoreCase(lowerInput)))
                 .toList();
     }
 
