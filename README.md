@@ -12,10 +12,8 @@ A backend application for organizing and managing personal knowledge in a struct
 ## Tech Stack
 
 * Java
-* Spring Boot
-* Spring Data JPA
-* PostgreSQL
 
+  
 ## Purpose
 
 This project is built to practice backend development and software engineering concepts through a real-world application.
